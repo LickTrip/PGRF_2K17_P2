@@ -12,10 +12,17 @@ public class MyPopUpMenu extends JPopupMenu {
         dispMode.add(myItems.getItemNormalC());
         dispMode.add(myItems.getItemNdoLC());
         dispMode.add(myItems.getItemPhongC());
-
+        dispMode.add(myItems.getItemSpotPhongC());
         add(dispMode);
+
         add(myItems.getItemRotateL());
         add(myItems.getItemLine());
+
+        JMenu texMenu = new JMenu("Textures");
+        texMenu.add(myItems.getItemShowTexture());
+        texMenu.add(myItems.getItemShowTextureSample());
+        add(texMenu);
+
         add(myItems.getItemExit());
     }
 }

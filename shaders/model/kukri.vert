@@ -5,6 +5,7 @@ in vec3 inNormal;
 
 varying vec3 vertColor;
 varying vec3 normal;
+varying vec2 texCoord;
 varying vec3 lightDirection;
 varying vec3 viewDirection;
 varying float dist;
@@ -18,6 +19,7 @@ varying float constantAttenuation;
 varying float linearAttenuation;
 varying float quadraticAttenuation;
 varying float specularPower;
+varying vec3 spotDirection;
 //endregion
 
 //uniforms
@@ -28,6 +30,8 @@ uniform vec3 camera;
 uniform mat4 mRotate;
 
 const float PI = 3.1415926;
+
+vec3 toSpotDirection;
 
 
 //methods
@@ -40,17 +44,16 @@ void main() {
     viewDirection = - normalize(position.xyz);
     dist = length(inPosition - camera);
 
-//	gl_Position = mProj * mMV * vec4(inPosition*0.01, 1.0);
 	gl_Position = mProj * position;
 	vertColor = inNormal * 0.5 + 0.5;
-	//vertColor = vec3(inTexCoord , 0.5);
-	//vertColor = inNormal;
+	spotDirection = toSpotDirection;
+
 }
 
 void setConstants(){
     //barva
-     myColor = vec4(1.0, 0.2, 0.25, 1.0);
-     ambient = vec4(0.20);
+     myColor = vec4(0.0, 0.9, 0.25, 1.0);
+     ambient = vec4(0.70);
      diffuse = vec4(0.30);
      specular = vec4(0.10);
 
@@ -67,5 +70,7 @@ void setConstants(){
 
      specularPower = 6.0;
 
-     //toSpotDirection = vec3(-3.5, 3.0, 2.0);
+     texCoord = inTexCoord;
+
+     toSpotDirection = vec3(-3.5, 3.0, 2.0);
 }

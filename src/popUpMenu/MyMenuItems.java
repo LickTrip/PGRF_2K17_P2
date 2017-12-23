@@ -13,10 +13,15 @@ public class MyMenuItems {
     JMenuItem itemRotateL;
     JMenuItem itemLine;
 
+    JMenuItem itemShowTexture;
+    JMenuItem itemShowTextureSample;
+
+
     JMenuItem itemBaseC;
     JMenuItem itemNormalC;
     JMenuItem itemNdoLC;
     JMenuItem itemPhongC;
+    JMenuItem itemSpotPhongC;
 
 
     public MyMenuItems(Renderer ren){
@@ -25,6 +30,7 @@ public class MyMenuItems {
         rotateLItem();
         displayModes();
         lineItem();
+        showTextItem();
     }
 
     private void exitItem(){
@@ -63,6 +69,29 @@ public class MyMenuItems {
         });
     }
 
+    private void showTextItem(){
+        itemShowTexture = new JMenuItem("Show Texture");
+        KeyStroke r = KeyStroke.getKeyStroke("T");
+        itemShowTexture.setAccelerator(r);
+        itemShowTexture.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                renderer.setShowTexture(!renderer.isShowTexture());
+            }
+        });
+
+        itemShowTextureSample = new JMenuItem("Show Sampler");
+        KeyStroke x = KeyStroke.getKeyStroke("X");
+        itemShowTextureSample.setAccelerator(x);
+        itemShowTextureSample.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                renderer.setTextureSample(!renderer.isTextureSample());
+            }
+        });
+
+    }
+
     private void displayModes(){
         itemBaseC = new JMenuItem("Base Color");
         itemBaseC.addActionListener(new ActionListener() {
@@ -96,6 +125,14 @@ public class MyMenuItems {
             }
         });
 
+        itemSpotPhongC = new JMenuItem("Phong Spot Color");
+        itemSpotPhongC.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                renderer.setdMode(4);
+            }
+        });
+
     }
 
     public JMenuItem getItemExit() {
@@ -121,7 +158,19 @@ public class MyMenuItems {
         return itemPhongC;
     }
 
+    public JMenuItem getItemSpotPhongC() {
+        return itemSpotPhongC;
+    }
+
     public JMenuItem getItemLine() {
         return itemLine;
+    }
+
+    public JMenuItem getItemShowTexture() {
+        return itemShowTexture;
+    }
+
+    public JMenuItem getItemShowTextureSample() {
+        return itemShowTextureSample;
     }
 }

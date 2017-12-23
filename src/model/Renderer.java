@@ -5,12 +5,7 @@ import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 
-import oglutils.OGLBuffers;
-import oglutils.OGLModelOBJ;
-import oglutils.OGLTextRenderer;
-import oglutils.OGLUtils;
-import oglutils.ShaderUtils;
-import oglutils.ToFloatArray;
+import oglutils.*;
 
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -41,7 +36,10 @@ public class Renderer implements GLEventListener, MouseListener,
     OGLTextRenderer textRenderer;
     OGLModelOBJ model;
 
-    int shaderProgram, locMat, locProj, locMV, locTime, locCamera, locSwapXY, locMRotate;
+    OGLTexture2D colorKukriText, normKukriText, heightKukriText;
+    OGLTexture2D.Viewer textureViewer;
+
+    int shaderProgram, locMat, locProj, locMV, locTime, locCamera, locSwapXY, locMRotate, locShowTexture;
 
     Camera camera = new Camera();
     Mat4 mProj, swapYZ = new Mat4(new double[]{ //for horizontal pos
@@ -55,11 +53,13 @@ public class Renderer implements GLEventListener, MouseListener,
 
     boolean line = false;
     boolean isRotete = false;
+    boolean showTexture = true;
+    boolean textureSample = false;
     boolean isPressedL;
     float time = 0;
 
 
-    int[] subroutineDMode = new int[4];
+    int[] subroutineDMode = new int[5];
 
     @Override
     public void init(GLAutoDrawable glDrawable) {
@@ -90,11 +90,17 @@ public class Renderer implements GLEventListener, MouseListener,
         locCamera = gl.glGetUniformLocation(shaderProgram, "camera");
         locSwapXY = gl.glGetUniformLocation(shaderProgram, "mSwapXY");
         locMRotate = gl.glGetUniformLocation(shaderProgram, "mRotate");
+        locShowTexture = gl.glGetUniformLocation(shaderProgram, "showTexture");
 
         subroutineDMode[0] = gl.getGL3().glGetSubroutineIndex(shaderProgram, GL2GL3.GL_FRAGMENT_SHADER, "modeBase");
         subroutineDMode[1] = gl.getGL3().glGetSubroutineIndex(shaderProgram, GL2GL3.GL_FRAGMENT_SHADER, "modeNormal");
         subroutineDMode[2] = gl.getGL3().glGetSubroutineIndex(shaderProgram, GL2GL3.GL_FRAGMENT_SHADER, "modeNdotL");
         subroutineDMode[3] = gl.getGL3().glGetSubroutineIndex(shaderProgram, GL2GL3.GL_FRAGMENT_SHADER, "modePhong");
+        subroutineDMode[4] = gl.getGL3().glGetSubroutineIndex(shaderProgram, GL2GL3.GL_FRAGMENT_SHADER, "modeSpotPhong");
+
+        colorKukriText = new OGLTexture2D(gl, "/textures/kukri/kukri_Base_Color.png");
+        normKukriText = new OGLTexture2D(gl, "/textures/kukri/kukri_Normal_OpenGL.png");
+        //heightKukriText = new OGLTexture2D(gl, "/textures/kukri/kukri_Height.png");
 
         int[] maxSub = new int[1];
         int[] maxSubU = new int[1];
@@ -106,6 +112,7 @@ public class Renderer implements GLEventListener, MouseListener,
         setMyCamera();
 
         gl.glEnable(GL2GL3.GL_DEPTH_TEST);
+        textureViewer = new OGLTexture2D.Viewer(gl);
     }
 
     @Override
@@ -122,6 +129,7 @@ public class Renderer implements GLEventListener, MouseListener,
         gl.glUniformMatrix4fv(locSwapXY, 1, false, ToFloatArray.convert(swapYZ), 0);
 //        gl.glUniformMatrix4fv(locMV, 1, false, ToFloatArray.convert(swapYZ.mul(mRotate.mul(camera.getViewMatrix()))), 0);
         gl.glUniform3f(locCamera,(float) camera.getPosition().getX(),(float) camera.getPosition().getY(),(float) camera.getPosition().getZ());
+        gl.glUniform1i(locShowTexture, Helper.convertMyBool(showTexture));
 
         gl.getGL3().glUniformSubroutinesuiv(GL2GL3.GL_FRAGMENT_SHADER, 1, subroutineDMode, dMode % subroutineDMode.length);
 
@@ -138,12 +146,22 @@ public class Renderer implements GLEventListener, MouseListener,
         else
             gl.glPolygonMode(GL2GL3.GL_FRONT_AND_BACK, GL2GL3.GL_FILL);
 
+        colorKukriText.bind(shaderProgram, "colorKukriText", 0);
+        normKukriText.bind(shaderProgram, "normalKukriText", 1);
+        //heightKukriText.bind(shaderProgram, "heightKukriText", 2);
+
         buffers.draw(model.getTopology(), shaderProgram);
 
         String text = new String(this.getClass().getName() + ": [LMB] camera, WSAD");
 
         textRenderer.drawStr2D(3, height - 20, text);
         textRenderer.drawStr2D(width - 90, 3, " MICHAL");
+
+        if (textureSample) {
+            textureViewer.view(colorKukriText, 0.5, 0.5, 0.5);
+            textureViewer.view(normKukriText, 0.5, 0.0, 0.5);
+            //textureViewer.view(heightKukriText, 0.5, -0.5, 0.5);
+        }
     }
 
     @Override
@@ -252,6 +270,12 @@ public class Renderer implements GLEventListener, MouseListener,
             case KeyEvent.VK_R:
                 isRotete = !isRotete;
                 break;
+            case KeyEvent.VK_T:
+                showTexture = !showTexture;
+                break;
+            case KeyEvent.VK_X:
+                textureSample = !textureSample;
+                break;
             case KeyEvent.VK_ESCAPE:
                 System.exit(0);
                 break;
@@ -300,5 +324,21 @@ public class Renderer implements GLEventListener, MouseListener,
 
     public void setLine(boolean line) {
         this.line = line;
+    }
+
+    public boolean isShowTexture() {
+        return showTexture;
+    }
+
+    public boolean isTextureSample() {
+        return textureSample;
+    }
+
+    public void setTextureSample(boolean textureSample) {
+        this.textureSample = textureSample;
+    }
+
+    public void setShowTexture(boolean showTexture) {
+        this.showTexture = showTexture;
     }
 }
